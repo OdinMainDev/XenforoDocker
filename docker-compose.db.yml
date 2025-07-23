@@ -1,0 +1,37 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: xenforo_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_db_data:/var/lib/mysql
+      - ./mysql_backups:/mysql_backups
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  mysql-backup:
+    image: mysql:8.0
+    container_name: xenforo_mysql_backup
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    volumes:
+      - ./mysql_backups:/mysql_backups
+      - ./scripts:/scripts:ro
+    environment:
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - BACKUP_RETENTION_MINUTES=${BACKUP_RETENTION_MINUTES}
+      - BACKUP_INTERVAL=${BACKUP_INTERVAL}
+      - RUN_ONCE=false
+    entrypoint: ["/scripts/backup.sh"]
+
+volumes:
+  mysql_data:
+    driver: local

@@ -1,0 +1,24 @@
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 nginx:80
+HiddenServicePort 443 nginx:443
+
+# Security settings
+SocksPort 0
+ControlPort 0
+RunAsDaemon 0
+
+# Logging
+Log notice stdout
+
+# Performance
+CircuitBuildTimeout 30
+LearnCircuitBuildTimeout 0
+MaxCircuitDirtiness 600
+
+# Security hardening
+ExitPolicy reject *:*
+ClientOnly 0
+
+# User permissions
+User tor
+DataDirectory /var/lib/tor

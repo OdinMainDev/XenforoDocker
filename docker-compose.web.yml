@@ -1,0 +1,93 @@
+services:
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: xenforo_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - xenforo_app:/var/www/html:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - php-fpm
+    networks:
+      - xenforo
+    environment:
+      - TZ=${TZ}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+
+  php-fpm:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: xenforo_php
+    restart: unless-stopped
+    volumes:
+      - xenforo_app:/var/www/html
+      - ./php/php.ini:/usr/local/etc/php/php.ini:ro
+      - ./php/pool.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      - ./logs/php:/var/log/php
+    networks:
+      - xenforo
+    environment:
+      - TZ=${TZ}
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT}
+      - PHP_MAX_EXECUTION_TIME=${PHP_MAX_EXECUTION_TIME}
+      - PHP_POST_MAX_SIZE=${PHP_POST_MAX_SIZE}
+      - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE}
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+
+  tor:
+    image: alpine:latest
+    container_name: xenforo_tor
+    restart: unless-stopped
+    command: sh -c "apk add --no-cache tor && tor -f /etc/tor/torrc"
+    volumes:
+      - ./tor/torrc:/etc/tor/torrc:ro
+      - tor_keys:/var/lib/tor/hidden_service:rw
+      - ./logs/tor:/var/log/tor
+    networks:
+      - xenforo
+    environment:
+      - TZ=${TZ}
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  xenforo:
+    driver: bridge
+
+volumes:
+  xenforo_app:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./xenforo_app
+  tor_keys:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./tor/keys
+  nginx_logs:
+  php_logs:

@@ -1,0 +1,47 @@
+[mysqld]
+# Security settings
+skip-networking = 0
+bind-address = 0.0.0.0
+skip-name-resolve = 1
+skip-show-database = 1
+local-infile = 0
+secure-file-priv = /var/lib/mysql-files/
+
+# Performance and reliability
+innodb_buffer_pool_size = 256M
+innodb_log_file_size = 64M
+innodb_flush_method = O_DIRECT
+innodb_file_per_table = 1
+
+# Query cache
+query_cache_type = 1
+query_cache_size = 32M
+query_cache_limit = 2M
+
+# Connection settings
+max_connections = 200
+max_user_connections = 50
+connect_timeout = 30
+wait_timeout = 600
+interactive_timeout = 600
+
+# Logging
+log-error = /var/log/mysql/error.log
+slow-query-log = 1
+slow-query-log-file = /var/log/mysql/slow.log
+long_query_time = 2
+log-queries-not-using-indexes = 1
+
+# Character set
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# Disable dangerous functions
+skip-symbolic-links = 1
+
+[mysql]
+no-auto-rehash = 1
+default-character-set = utf8mb4
+
+[client]
+default-character-set = utf8mb4
