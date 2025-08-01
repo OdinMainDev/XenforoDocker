@@ -20,5 +20,4 @@ ExitPolicy reject *:*
 ClientOnly 0
 
 # User permissions
-User tor
 DataDirectory /var/lib/tor
