@@ -11,6 +11,7 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - xenforo_app:/var/www/html:ro
       - ./logs/nginx:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - php-fpm
     networks:
@@ -26,6 +27,10 @@ services:
       - DAC_OVERRIDE
       - SETGID
       - SETUID
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
 
   php-fpm:
     build:
@@ -56,21 +61,21 @@ services:
       - SETGID
       - SETUID
 
-  tor:
-    image: alpine:latest
-    container_name: xenforo_tor
-    restart: unless-stopped
-    command: sh -c "apk add --no-cache tor && tor -f /etc/tor/torrc"
-    volumes:
-      - ./tor/torrc:/etc/tor/torrc:ro
-      - tor_keys:/var/lib/tor/hidden_service:rw
-      - ./logs/tor:/var/log/tor
-    networks:
-      - xenforo
-    environment:
-      - TZ=${TZ}
-    security_opt:
-      - no-new-privileges:true
+  # tor:
+  #   image: alpine:latest
+  #   container_name: xenforo_tor
+  #   restart: unless-stopped
+  #   command: sh -c "apk add --no-cache tor && tor -f /etc/tor/torrc"
+  #   volumes:
+  #     - ./tor/torrc:/etc/tor/torrc:ro
+  #     - tor_keys:/var/lib/tor/hidden_service:rw
+  #     - ./logs/tor:/var/log/tor
+  #   networks:
+  #     - xenforo
+  #   environment:
+  #     - TZ=${TZ}
+  #   security_opt:
+  #     - no-new-privileges:true
 
 networks:
   xenforo:
