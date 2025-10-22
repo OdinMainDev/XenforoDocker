@@ -31,10 +31,27 @@ ensure_curl() {
         return 0
     fi
 
+    log_message "curl not found; attempting to install..."
+
     if command -v apt-get >/dev/null 2>&1; then
-        log_message "curl not found; attempting to install..."
         if DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
             DEBIAN_FRONTEND=noninteractive apt-get install -y -qq curl >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v microdnf >/dev/null 2>&1; then
+        if microdnf install -y curl >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v dnf >/dev/null 2>&1; then
+        if dnf install -y curl >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v yum >/dev/null 2>&1; then
+        if yum install -y curl >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v apk >/dev/null 2>&1; then
+        if apk add --no-cache curl >/dev/null 2>&1; then
             return 0
         fi
     fi
@@ -48,10 +65,27 @@ ensure_zip() {
         return 0
     fi
 
+    log_message "zip not found; attempting to install..."
+
     if command -v apt-get >/dev/null 2>&1; then
-        log_message "zip not found; attempting to install..."
         if DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
             DEBIAN_FRONTEND=noninteractive apt-get install -y -qq zip >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v microdnf >/dev/null 2>&1; then
+        if microdnf install -y zip >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v dnf >/dev/null 2>&1; then
+        if dnf install -y zip >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v yum >/dev/null 2>&1; then
+        if yum install -y zip >/dev/null 2>&1; then
+            return 0
+        fi
+    elif command -v apk >/dev/null 2>&1; then
+        if apk add --no-cache zip >/dev/null 2>&1; then
             return 0
         fi
     fi
