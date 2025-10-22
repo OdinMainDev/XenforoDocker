@@ -233,6 +233,10 @@ docker compose -f docker-compose.web.yml restart tor
 - **PHP Errors**: `logs/php/error.log`
 - **Tor Logs**: Available via `docker logs xenforo_tor`
 
+### Log Retention
+- Nginx logs are automatically trimmed to the `NGINX_LOG_MAX_SIZE_MB` limit (default 500 MB) by the backup service.
+- Adjust the limit in `.env` if you need a different cap or disable the mount if you want to manage retention manually.
+
 ### Health Checks
 ```bash
 # Check all services status
@@ -346,6 +350,10 @@ location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
 # Manual backup
 docker exec xenforo_mysql mysqldump -u root -p xenforo > backup.sql
 ```
+
+Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env` to push each compressed backup to Telegram automatically. The script retains local archives only when delivery is skipped or fails. Optional overrides: `TELEGRAM_THREAD_ID` for forum topics and `TELEGRAM_MESSAGE_PREFIX` for the caption start.
+
+Backups are exported as password-protected ZIP archives. Configure `BACKUP_ARCHIVE_PASSWORD` in `.env` (required) so the script can encrypt the archive before uploading or storing it.
 
 ### Configuration Backup
 ```bash

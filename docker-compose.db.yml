@@ -23,6 +23,7 @@ services:
     volumes:
       - ./mysql_backups:/mysql_backups
       - ./scripts:/scripts:ro
+      - ./logs/nginx:/nginx_logs
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -30,6 +31,13 @@ services:
       - BACKUP_RETENTION_MINUTES=${BACKUP_RETENTION_MINUTES}
       - BACKUP_INTERVAL=${BACKUP_INTERVAL}
       - RUN_ONCE=false
+      - NGINX_LOG_DIR=/nginx_logs
+      - NGINX_LOG_MAX_SIZE_MB=${NGINX_LOG_MAX_SIZE_MB:-500}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - TELEGRAM_THREAD_ID=${TELEGRAM_THREAD_ID}
+      - TELEGRAM_MESSAGE_PREFIX=${TELEGRAM_MESSAGE_PREFIX}
+      - BACKUP_ARCHIVE_PASSWORD=${BACKUP_ARCHIVE_PASSWORD}
     entrypoint: ["/scripts/backup.sh"]
 
 volumes:
