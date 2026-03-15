@@ -123,11 +123,14 @@ send_telegram_message() {
     local url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
 
     curl -s -X POST "$url" \
+        --connect-timeout 30 \
+        --max-time 60 \
         -d "chat_id=${TELEGRAM_CHAT_ID}" \
         -d "parse_mode=HTML" \
         --data-urlencode "text=${message}" \
-        > /dev/null
+        > /dev/null 2>&1 || log "WARNING: Failed to send Telegram message"
 }
+
 
 # ==============================
 # Telegram document
@@ -139,16 +142,30 @@ send_telegram_document() {
     local caption="$2"
 
     local url="https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument"
+    local filesize
+    filesize=$(du -h "$file_path" | cut -f1)
+
+    log "Sending to Telegram: $(basename "$file_path") (${filesize})"
 
     local response
+    local exit_code=0
 
     response=$(curl -sS -X POST "$url" \
+        --connect-timeout 30 \
+        --max-time 600 \
         -F "chat_id=${TELEGRAM_CHAT_ID}" \
         -F "document=@${file_path}" \
         -F "caption=${caption}" \
-        -F "parse_mode=HTML")
+        -F "parse_mode=HTML" 2>&1) || exit_code=$?
+
+    if [ "$exit_code" -ne 0 ]; then
+        log "ERROR: curl failed with exit code ${exit_code}"
+        log "ERROR: ${response}"
+        return 1
+    fi
 
     if echo "$response" | grep -q '"ok":true'; then
+        log "Sent successfully: $(basename "$file_path")"
         return 0
     fi
 
@@ -156,12 +173,13 @@ send_telegram_document() {
     description=$(echo "$response" | grep -o '"description":"[^"]*"' | head -n1 2>/dev/null || true)
     description=$(echo "$description" | sed 's/"description":"\(.*\)"/\1/' | sed 's/\\"/"/g')
     if [ -n "$description" ]; then
-        log "ERROR: Telegram API error: ${description}"
+        log "ERROR: Telegram API: ${description}"
     else
-        log "ERROR: Telegram API returned unexpected response"
+        log "ERROR: Telegram unexpected response: ${response}"
     fi
     return 1
 }
+
 
 # ==============================
 # Send large files (split)
